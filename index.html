@@ -192,7 +192,7 @@ body {
     top: 0; left: 0;
     width: 100%; height: 100%;
     background: #f5f0e8;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     color: #1A3C6E;
@@ -569,6 +569,27 @@ body {
     ];
 
     var imgCache = {};
+    function ensureImg(pageNum, callback) {
+        var cached = imgCache[pageNum];
+        if (cached && cached.complete && cached.naturalWidth > 0) {
+            callback();
+            return;
+        }
+        if (!cached) {
+            cached = new Image();
+            imgCache[pageNum] = cached;
+            cached.src = PAGE_IMAGES[pageNum - 1];
+        }
+        var fired = false;
+        var done = function() {
+            if (fired) return;
+            fired = true;
+            callback();
+        };
+        if (cached.complete) { done(); }
+        else { cached.addEventListener('load', done, {once:true}); cached.addEventListener('error', done, {once:true}); }
+        setTimeout(done, 5000); // 5s timeout — never lock up
+    }
     function showPage(pageNum) {
         if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
         currentPage = pageNum;
@@ -580,7 +601,6 @@ body {
         var pageDiv = document.createElement('div');
         pageDiv.className = 'page';
         pageDiv.id = 'page-' + pageNum;
-        // Clone cached bitmap if available (instant), otherwise let browser load progressively
         var cached = imgCache[pageNum];
         var img;
         if (cached && cached.complete && cached.naturalWidth > 0) {
@@ -619,25 +639,25 @@ body {
         if (targetPage < 1 || targetPage > TOTAL_PAGES) return;
         if (targetPage === currentPage) return;
         isAnimating = true;
-        // Deadlock safety: force-reset after 3s no matter what
-        var safetyId = setTimeout(function() { isAnimating = false; }, 3000);
         var oldPage = currentPage;
         var distance = Math.abs(targetPage - oldPage);
         var oldPageDiv = pageView.querySelector('.page[id]');
         var oldImg = oldPageDiv ? oldPageDiv.querySelector('img') : null;
-        showPage(targetPage);
-        var wrappedPlay = function() {
-            clearTimeout(safetyId);
-            playOverlay(oldImg, oldPage, targetPage, distance);
-        };
-        // If old image not ready, wait a tick so the old layer doesn't flash
-        if (!oldImg || !oldImg.complete || oldImg.naturalWidth === 0) {
-            setTimeout(wrappedPlay, 20);
+        if (distance <= 10) {
+            // Nearby: instant (img is already preloaded or will load fast)
+            showPage(targetPage);
+            doOverlay(oldImg, oldPage, targetPage, distance);
         } else {
-            wrappedPlay();
+            // Far jump: wait for target image then transition
+            if (loadingEl) loadingEl.style.display = 'flex';
+            ensureImg(targetPage, function() {
+                if (loadingEl) loadingEl.style.display = 'none';
+                showPage(targetPage);
+                doOverlay(oldImg, oldPage, targetPage, distance);
+            });
         }
     }
-    function playOverlay(oldImg, oldPage, targetPage, distance) {
+    function doOverlay(oldImg, oldPage, targetPage, distance) {
         if (!oldImg) { isAnimating = false; return; }
         var overlay = document.createElement('div');
         overlay.className = 'flip-page';
@@ -649,12 +669,11 @@ body {
             overlay.addEventListener('animationend', function() { overlay.remove(); isAnimating = false; });
             setTimeout(function() { if (overlay.parentNode) overlay.remove(); isAnimating = false; }, 700);
         } else {
+            // 4-10 pages: quick fade (not 3D flip for distant jumps)
             overlay.style.zIndex = '15';
             overlay.style.transition = 'opacity 0.3s ease-out';
             requestAnimationFrame(function() {
-                requestAnimationFrame(function() {
-                    overlay.style.opacity = '0';
-                });
+                requestAnimationFrame(function() { overlay.style.opacity = '0'; });
             });
             overlay.addEventListener('transitionend', function() { overlay.remove(); isAnimating = false; });
             setTimeout(function() { if (overlay.parentNode) overlay.remove(); isAnimating = false; }, 500);
