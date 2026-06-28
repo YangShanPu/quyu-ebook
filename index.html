@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta property="og:title" content="取予：半生悟透的持家与传家之道">
+<meta property="og:description" content="赚钱凭眼界，守财立规矩，传家载家风">
+<meta property="og:image" content="og-cover.jpg">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="取予">
+<title>取予：半生悟透的持家与传家之道</title>
+<style>
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    background: #2a2a2a;
+    font-family: "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+#book-container {
+    position: relative;
+    width: 90vw;
+    max-width: 700px;
+    height: 90vh;
+    max-height: 920px;
+    perspective: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#page-view {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #f5f0e8;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.page {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f0e8;
+    z-index: 1;
+    transition: none;
+}
+.page img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 2px;
+}
+.flip-page {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f0e8;
+    transform-origin: left center;
+    backface-visibility: hidden;
+    z-index: 10;
+    will-change: transform;
+    transform: translateZ(0);
+}
+.flip-page img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.flip-forward {
+    animation: flipForward 0.6s ease-in-out forwards;
+}
+.flip-backward {
+    transform-origin: right center;
+    animation: flipBackward 0.6s ease-in-out forwards;
+}
+@keyframes flipForward {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(-180deg); }
+}
+@keyframes flipBackward {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(180deg); }
+}
+#nav-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 50px;
+    background: rgba(40,40,40,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+#nav-bar button {
+    background: none;
+    border: 1px solid #888;
+    color: #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: "Microsoft YaHei", sans-serif;
+    transition: all 0.2s;
+}
+#nav-bar button:hover {
+    background: #555;
+    color: #fff;
+    border-color: #aaa;
+}
+#nav-bar button:active {
+    background: #777;
+}
+#page-num {
+    color: #ddd;
+    font-size: 14px;
+    min-width: 80px;
+    text-align: center;
+}
+#toc-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+#toc-overlay.active {
+    display: flex;
+}
+#toc-panel {
+    background: #fff;
+    width: 80vw;
+    max-width: 500px;
+    max-height: 80vh;
+    border-radius: 8px;
+    overflow-y: auto;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+#toc-panel h2 {
+    text-align: center;
+    font-size: 18px;
+    color: #1A3C6E;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+.toc-item {
+    padding: 4px 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.toc-item:hover {
+    background: #f0f0f0;
+}
+@media (max-width: 600px) {
+    #book-container {
+        width: 95vw;
+        max-height: 85vh;
+    }
+    #nav-bar button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    #page-num {
+        font-size: 12px;
+    }
+}
+.loading-screen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #f5f0e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1A3C6E;
+    font-size: 16px;
+    z-index: 50;
+}
+
+
+#page-num {
+    color: #ddd; font-size: 14px; min-width: 80px; text-align: center;
+    cursor: pointer; padding: 6px 4px; border-radius: 4px; transition: background 0.2s;
+}
+#page-num:hover { background: rgba(255,255,255,0.1); }
+#goto-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6); z-index: 300; display: none;
+    justify-content: center; align-items: center;
+}
+#goto-dialog {
+    background: #2a2a2a; border-radius: 12px; padding: 24px; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5); min-width: 260px;
+}
+#goto-dialog h3 { color: #ddd; margin: 0 0 16px 0; font-size: 16px; font-weight: normal; }
+#goto-input {
+    width: 100%; padding: 10px 12px; font-size: 20px; text-align: center;
+    background: #3a3a3a; border: 2px solid #555; border-radius: 8px;
+    color: #fff; outline: none; box-sizing: border-box;
+}
+#goto-input:focus { border-color: #8ab4f8; }
+#goto-dialog .goto-btns { display: flex; gap: 12px; margin-top: 16px; justify-content: center; }
+#goto-dialog .goto-btns button {
+    flex: 1; padding: 10px 20px; border: none; border-radius: 8px;
+    font-size: 15px; cursor: pointer; transition: background 0.2s;
+}
+#goto-dialog .goto-confirm { background: #4a90d9; color: #fff; }
+#goto-dialog .goto-confirm:hover { background: #5aa0e9; }
+#goto-dialog .goto-cancel { background: #444; color: #ccc; }
+#goto-dialog .goto-cancel:hover { background: #555; }
+</style>
+</head>
+<body>
+
+<div id="toc-overlay">
+    <div id="toc-panel">
+        <div style="text-align:center;font-size:16px;font-weight:bold;color:#1A3C6E;padding:10px 0;border-bottom:1px solid #ddd;margin-bottom:6px;">目 录</div>
+        <div class="toc-item level-0" style="font-size:14px;font-weight:bold;color:#1A3C6E;" onclick="flipToPage(11)">
+            <span style="cursor:pointer;">预备知识：财富的地基——理解钱、资产与负债的本质</span><span style="float:right;color:#999;font-size:10px;">11</span>
+        </div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(14)"><span style="cursor:pointer;">第一板块：修心立身——破除内耗</span><span style="float:right;color:#999;font-size:10px;">14</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(14)"><span style="cursor:pointer;">第一章 执念太重，是最大的破财内耗</span><span style="float:right;color:#999;font-size:10px;">14</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(17)"><span style="cursor:pointer;">第二章 有钱钱交代，无钱话交代——终身死守的做人底线</span><span style="float:right;color:#999;font-size:10px;">17</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(18)"><span style="cursor:pointer;">第三章 助人随缘，善良有尺，心软有度</span><span style="float:right;color:#999;font-size:10px;">18</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(19)"><span style="cursor:pointer;">第四章 借钱求助、负债沟通、拒绝借钱——三套落地话术</span><span style="float:right;color:#999;font-size:10px;">19</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(23)"><span style="cursor:pointer;">第五章 三条绝对不能碰的破产铁律</span><span style="float:right;color:#999;font-size:10px;">23</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(27)"><span style="cursor:pointer;">第二板块：择业深耕——赛道定终身</span><span style="float:right;color:#999;font-size:10px;">27</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(27)"><span style="cursor:pointer;">第六章 第一份赛道定终身——择业切忌图省事就近入行</span><span style="float:right;color:#999;font-size:10px;">27</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(28)"><span style="cursor:pointer;">第七章 打工人终极天命——极致做事惯性，长期深耕是唯一捷径</span><span style="float:right;color:#999;font-size:10px;">28</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(30)"><span style="cursor:pointer;">第八章 求学与职场：分数是标尺，习惯是根基</span><span style="float:right;color:#999;font-size:10px;">30</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(32)"><span style="cursor:pointer;">第九章 战略守赛道，战术换平台——彻底区分跳槽与跨行</span><span style="float:right;color:#999;font-size:10px;">32</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(34)"><span style="cursor:pointer;">第十章 前期让利入局——普通人最高级的逆袭</span><span style="float:right;color:#999;font-size:10px;">34</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(36)"><span style="cursor:pointer;">第十一章 就业深耕与两种创业路径</span><span style="float:right;color:#999;font-size:10px;">36</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(41)"><span style="cursor:pointer;">第三板块：守财根基——勤俭与家庭风控</span><span style="float:right;color:#999;font-size:10px;">41</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(41)"><span style="cursor:pointer;">第十二章 传世守财天道——开源节流，不透支、不奢靡</span><span style="float:right;color:#999;font-size:10px;">41</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(44)"><span style="cursor:pointer;">第十三章 家庭兜底天道——永久留存保命养家现金流</span><span style="float:right;color:#999;font-size:10px;">44</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(47)"><span style="cursor:pointer;">第十四章 农耕底层天道——靠天吃饭，勤勉节俭为立身之本</span><span style="float:right;color:#999;font-size:10px;">47</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(48)"><span style="cursor:pointer;">第十五章 全民防骗全攻略——从传统骗局到新型诈骗的全面拆解</span><span style="float:right;color:#999;font-size:10px;">48</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(60)"><span style="cursor:pointer;">第四板块：求财能力——格局与体魄</span><span style="float:right;color:#999;font-size:10px;">60</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(60)"><span style="cursor:pointer;">第十六章 职场财富复利——靠谱口碑是终身隐形财富</span><span style="float:right;color:#999;font-size:10px;">60</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(61)"><span style="cursor:pointer;">第十七章 生意财富真相——专业获客，靠谱留财</span><span style="float:right;color:#999;font-size:10px;">61</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(62)"><span style="cursor:pointer;">第十八章 增收底层逻辑——跨时代通用的五大法则</span><span style="float:right;color:#999;font-size:10px;">62</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(65)"><span style="cursor:pointer;">第十九章 财富承载真相——能力赚钱，体魄担财</span><span style="float:right;color:#999;font-size:10px;">65</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(66)"><span style="cursor:pointer;">第二十章 富贵跃迁核心——能力定上限，魄力定阶层</span><span style="float:right;color:#999;font-size:10px;">66</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(69)"><span style="cursor:pointer;">第五板块：财富分配——世俗天道</span><span style="float:right;color:#999;font-size:10px;">69</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(69)"><span style="cursor:pointer;">第二十一章 盈利分配终极天道——财富四分法（附实操方法）</span><span style="float:right;color:#999;font-size:10px;">69</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(72)"><span style="cursor:pointer;">第二十二章 普通家庭稳健理财入门——让30%增值资金真正跑赢通胀</span><span style="float:right;color:#999;font-size:10px;">72</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(80)"><span style="cursor:pointer;">第二十三章 人间反常天道——一权当贵压百祸，能力求财私德两分立</span><span style="float:right;color:#999;font-size:10px;">80</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(81)"><span style="cursor:pointer;">第二十四章 财富终极闭环——能力赚近财，德行守远福</span><span style="float:right;color:#999;font-size:10px;">81</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(82)"><span style="cursor:pointer;">第二十五章 捷径横财不可取——看得见的收益，看不见的代价</span><span style="float:right;color:#999;font-size:10px;">82</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(86)"><span style="cursor:pointer;">第六板块：环境风水与居家守财</span><span style="float:right;color:#999;font-size:10px;">86</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(86)"><span style="cursor:pointer;">第二十六章 环境即风水——净宅净心，最低成本养财改运</span><span style="float:right;color:#999;font-size:10px;">86</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(87)"><span style="cursor:pointer;">第二十七章 居家惜物与按需备餐——日常细碎损耗的持家智慧</span><span style="float:right;color:#999;font-size:10px;">87</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(89)"><span style="cursor:pointer;">第二十八章 天价高香是虚妄耗财——静心向善方为真功德</span><span style="float:right;color:#999;font-size:10px;">89</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(93)"><span style="cursor:pointer;">第七板块：婚姻家庭——聚财之本</span><span style="float:right;color:#999;font-size:10px;">93</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(93)"><span style="cursor:pointer;">第二十九章 婚姻伴侣天道——伴侣是人生最大财富杠杆</span><span style="float:right;color:#999;font-size:10px;">93</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(94)"><span style="cursor:pointer;">第三十章 婚前财务摸底与婚后财务整合——从两个人到一个家</span><span style="float:right;color:#999;font-size:10px;">94</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(96)"><span style="cursor:pointer;">第三十一章 婚姻破裂——普通人一生最大的财富浩劫</span><span style="float:right;color:#999;font-size:10px;">96</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(102)"><span style="cursor:pointer;">第三十二章 夫妻共财同心——持家管钱的三大核心准则</span><span style="float:right;color:#999;font-size:10px;">102</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(105)"><span style="cursor:pointer;">第三十三章 认知落差致夫妻离心——包容成长，守护家财</span><span style="float:right;color:#999;font-size:10px;">105</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(106)"><span style="cursor:pointer;">第三十四章 人性难经考验——守家守财重在规避环境</span><span style="float:right;color:#999;font-size:10px;">106</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(109)"><span style="cursor:pointer;">第三十五章 家庭资产隔离与婚内风控——守住家业不被拖垮</span><span style="float:right;color:#999;font-size:10px;">109</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(112)"><span style="cursor:pointer;">第八板块：家风传承——为人父母</span><span style="float:right;color:#999;font-size:10px;">112</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(112)"><span style="cursor:pointer;">第三十六章 为人父母终极财富认知——不传财富只传承家风</span><span style="float:right;color:#999;font-size:10px;">112</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(116)"><span style="cursor:pointer;">第三十七章 子女财商系统教育——传财不如传驾驭财富的能力</span><span style="float:right;color:#999;font-size:10px;">116</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(117)"><span style="cursor:pointer;">第三十八章 认知匮乏易踩育儿、教育各类破财陷阱</span><span style="float:right;color:#999;font-size:10px;">117</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(120)"><span style="cursor:pointer;">第三十九章 杜绝子女啃老躺平——斩断家族气运断代的根源</span><span style="float:right;color:#999;font-size:10px;">120</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(121)"><span style="cursor:pointer;">第四十章 家族传世的高阶维度——不同职业的福报与因果</span><span style="float:right;color:#999;font-size:10px;">121</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(123)"><span style="cursor:pointer;">第九板块：平凡心态——圈层与理财</span><span style="float:right;color:#999;font-size:10px;">123</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(123)"><span style="cursor:pointer;">第四十一章 普通人终极安稳福报天道</span><span style="float:right;color:#999;font-size:10px;">123</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(124)"><span style="cursor:pointer;">第四十二章 圈层环境与择友之道——近朱者赤，交友亦是守财</span><span style="float:right;color:#999;font-size:10px;">124</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(125)"><span style="cursor:pointer;">第四十三章 人情往来，莫因面子虚耗家财</span><span style="float:right;color:#999;font-size:10px;">125</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(126)"><span style="cursor:pointer;">第四十四章 理性理财——守财亦要善理财，戒贪守正活用复利</span><span style="float:right;color:#999;font-size:10px;">126</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(134)"><span style="cursor:pointer;">第十板块：传世风控——终局保障</span><span style="float:right;color:#999;font-size:10px;">134</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(134)"><span style="cursor:pointer;">第四十五章 大病医疗财务风控——健康是最大的守财</span><span style="float:right;color:#999;font-size:10px;">134</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(140)"><span style="cursor:pointer;">第四十六章 中年失业、行业下行的兜底对冲逻辑</span><span style="float:right;color:#999;font-size:10px;">140</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(142)"><span style="cursor:pointer;">第四十七章 养老储备与家族遗产传承风控</span><span style="float:right;color:#999;font-size:10px;">142</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(151)"><span style="cursor:pointer;">第十一板块：全球经营的商业视野——双向出海与避险</span><span style="float:right;color:#999;font-size:10px;">151</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(151)"><span style="cursor:pointer;">第四十八章 全球视野护城河——国内产业链底牌与认知纠偏</span><span style="float:right;color:#999;font-size:10px;">151</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(157)"><span style="cursor:pointer;">第四十九章 外贸全流程避坑——获客、赊销、交付、合规四大隐形亏损</span><span style="float:right;color:#999;font-size:10px;">157</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(160)"><span style="cursor:pointer;">第五十章 合规红线——外汇税务、跨境知识产权、双重征税</span><span style="float:right;color:#999;font-size:10px;">160</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(162)"><span style="cursor:pointer;">第五十一章 QDII与港股通——合规理财参与全球市场</span><span style="float:right;color:#999;font-size:10px;">162</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(164)"><span style="cursor:pointer;">第五十二章 家族传承全球化——产业升级全赛道与后代分层培育</span><span style="float:right;color:#999;font-size:10px;">164</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(168)"><span style="cursor:pointer;">第十二板块：取予平衡——贯穿此生与后世的人生格局</span><span style="float:right;color:#999;font-size:10px;">168</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(168)"><span style="cursor:pointer;">第五十三章 练就政商嗅觉——看懂政策大势，顺势而行、规避兴衰</span><span style="float:right;color:#999;font-size:10px;">168</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(171)"><span style="cursor:pointer;">第五十四章 双线发展正本清源——重新定义赛道、公权与社会影响力</span><span style="float:right;color:#999;font-size:10px;">171</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(173)"><span style="cursor:pointer;">第五十五章 取予动态平衡传世规律——结合家族实例落地践行</span><span style="float:right;color:#999;font-size:10px;">173</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(178)"><span style="cursor:pointer;">第五十六章 普通人无需高位人脉——公开规则，足以吃尽世间合规红利</span><span style="float:right;color:#999;font-size:10px;">178</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(181)"><span style="cursor:pointer;">第五十七章 政商相处绝对底线——公私分明，是家族世代平安的护身符</span><span style="float:right;color:#999;font-size:10px;">181</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(184)"><span style="cursor:pointer;">第五十八章 分阶培育后代双线家风——幼时拓格局，少年观大势，青年择坦途</span><span style="float:right;color:#999;font-size:10px;">184</span></div>
+<div class="toc-item" style="font-size:14px;font-weight:bold;color:#1A3C6E;padding:6px 0 2px 0;" onclick="flipToPage(188)"><span style="cursor:pointer;">后记 半生悟道，以财修心，以德传家</span><span style="float:right;color:#999;font-size:10px;">188</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(191)"><span style="cursor:pointer;">附录1  家庭财商极简落地执行清单</span><span style="float:right;color:#999;font-size:10px;">191</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(195)"><span style="cursor:pointer;">附录2  年度家庭财富自查表（每年12月统一核对）</span><span style="float:right;color:#999;font-size:10px;">195</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(199)"><span style="cursor:pointer;">附录3  全书金句集</span><span style="float:right;color:#999;font-size:10px;">199</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(203)"><span style="cursor:pointer;">附录4  全书关键词检索索引</span><span style="float:right;color:#999;font-size:10px;">203</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(204)"><span style="cursor:pointer;">附录5  人生四大阶段财商核心重点</span><span style="float:right;color:#999;font-size:10px;">204</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(205)"><span style="cursor:pointer;">附录6  家庭必备法律文书清单与年度档案整理制度</span><span style="float:right;color:#999;font-size:10px;">205</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(206)"><span style="cursor:pointer;">附录7  家庭常用简易法律文书模板（可直接手写抄用）</span><span style="float:right;color:#999;font-size:10px;">206</span></div>
+<div class="toc-item" style="font-size:11px;font-weight:normal;color:#2C2C2C;padding:2px 0 2px 12px;" onclick="flipToPage(209)"><span style="cursor:pointer;">附录8  一页式全民避坑速查表——五条红线保一生</span><span style="float:right;color:#999;font-size:10px;">209</span></div>
+            </div>
+</div>
+
+<div id="book-container">
+    <div id="page-view">
+        <div class="loading-screen" id="loading">Loading...</div>
+    </div>
+</div>
+
+<div id="nav-bar">
+    <button onclick="openTOC()">&#9776; 目录</button>
+    <button onclick="prevPage()">&#9664; 上一页</button>
+    <span id="page-num">1 / 209</span>
+    <button onclick="nextPage()">&#9654; 下一页</button>
+    <button onclick="flipToPage(1)">&#8962; 封面</button>
+</div>
+
+<div id="goto-overlay" onclick="hideGoto()">
+    <div id="goto-dialog" onclick="event.stopPropagation()">
+        <h3>跳转到第几页？</h3>
+        <input type="number" id="goto-input" min="1" max="209" placeholder="输入页码" onkeydown="if(event.key==='Enter')confirmGoto()">
+        <div class="goto-btns">
+            <button class="goto-cancel" onclick="hideGoto()">取消</button>
+            <button class="goto-confirm" onclick="confirmGoto()">确定</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var TOTAL_PAGES = 209;
+    var currentPage = 1;
+    var isAnimating = false;
+    var pageView = document.getElementById("page-view");
+    var pageNumSpan = document.getElementById("page-num");
+    var loadingEl = document.getElementById("loading");
+    var PAGE_IMAGES = [
+    "pages/page_1.jpg",
+    "pages/page_2.jpg",
+    "pages/page_3.jpg",
+    "pages/page_4.jpg",
+    "pages/page_5.jpg",
+    "pages/page_6.jpg",
+    "pages/page_7.jpg",
+    "pages/page_8.jpg",
+    "pages/page_9.jpg",
+    "pages/page_10.jpg",
+    "pages/page_11.jpg",
+    "pages/page_12.jpg",
+    "pages/page_13.jpg",
+    "pages/page_14.jpg",
+    "pages/page_15.jpg",
+    "pages/page_16.jpg",
+    "pages/page_17.jpg",
+    "pages/page_18.jpg",
+    "pages/page_19.jpg",
+    "pages/page_20.jpg",
+    "pages/page_21.jpg",
+    "pages/page_22.jpg",
+    "pages/page_23.jpg",
+    "pages/page_24.jpg",
+    "pages/page_25.jpg",
+    "pages/page_26.jpg",
+    "pages/page_27.jpg",
+    "pages/page_28.jpg",
+    "pages/page_29.jpg",
+    "pages/page_30.jpg",
+    "pages/page_31.jpg",
+    "pages/page_32.jpg",
+    "pages/page_33.jpg",
+    "pages/page_34.jpg",
+    "pages/page_35.jpg",
+    "pages/page_36.jpg",
+    "pages/page_37.jpg",
+    "pages/page_38.jpg",
+    "pages/page_39.jpg",
+    "pages/page_40.jpg",
+    "pages/page_41.jpg",
+    "pages/page_42.jpg",
+    "pages/page_43.jpg",
+    "pages/page_44.jpg",
+    "pages/page_45.jpg",
+    "pages/page_46.jpg",
+    "pages/page_47.jpg",
+    "pages/page_48.jpg",
+    "pages/page_49.jpg",
+    "pages/page_50.jpg",
+    "pages/page_51.jpg",
+    "pages/page_52.jpg",
+    "pages/page_53.jpg",
+    "pages/page_54.jpg",
+    "pages/page_55.jpg",
+    "pages/page_56.jpg",
+    "pages/page_57.jpg",
+    "pages/page_58.jpg",
+    "pages/page_59.jpg",
+    "pages/page_60.jpg",
+    "pages/page_61.jpg",
+    "pages/page_62.jpg",
+    "pages/page_63.jpg",
+    "pages/page_64.jpg",
+    "pages/page_65.jpg",
+    "pages/page_66.jpg",
+    "pages/page_67.jpg",
+    "pages/page_68.jpg",
+    "pages/page_69.jpg",
+    "pages/page_70.jpg",
+    "pages/page_71.jpg",
+    "pages/page_72.jpg",
+    "pages/page_73.jpg",
+    "pages/page_74.jpg",
+    "pages/page_75.jpg",
+    "pages/page_76.jpg",
+    "pages/page_77.jpg",
+    "pages/page_78.jpg",
+    "pages/page_79.jpg",
+    "pages/page_80.jpg",
+    "pages/page_81.jpg",
+    "pages/page_82.jpg",
+    "pages/page_83.jpg",
+    "pages/page_84.jpg",
+    "pages/page_85.jpg",
+    "pages/page_86.jpg",
+    "pages/page_87.jpg",
+    "pages/page_88.jpg",
+    "pages/page_89.jpg",
+    "pages/page_90.jpg",
+    "pages/page_91.jpg",
+    "pages/page_92.jpg",
+    "pages/page_93.jpg",
+    "pages/page_94.jpg",
+    "pages/page_95.jpg",
+    "pages/page_96.jpg",
+    "pages/page_97.jpg",
+    "pages/page_98.jpg",
+    "pages/page_99.jpg",
+    "pages/page_100.jpg",
+    "pages/page_101.jpg",
+    "pages/page_102.jpg",
+    "pages/page_103.jpg",
+    "pages/page_104.jpg",
+    "pages/page_105.jpg",
+    "pages/page_106.jpg",
+    "pages/page_107.jpg",
+    "pages/page_108.jpg",
+    "pages/page_109.jpg",
+    "pages/page_110.jpg",
+    "pages/page_111.jpg",
+    "pages/page_112.jpg",
+    "pages/page_113.jpg",
+    "pages/page_114.jpg",
+    "pages/page_115.jpg",
+    "pages/page_116.jpg",
+    "pages/page_117.jpg",
+    "pages/page_118.jpg",
+    "pages/page_119.jpg",
+    "pages/page_120.jpg",
+    "pages/page_121.jpg",
+    "pages/page_122.jpg",
+    "pages/page_123.jpg",
+    "pages/page_124.jpg",
+    "pages/page_125.jpg",
+    "pages/page_126.jpg",
+    "pages/page_127.jpg",
+    "pages/page_128.jpg",
+    "pages/page_129.jpg",
+    "pages/page_130.jpg",
+    "pages/page_131.jpg",
+    "pages/page_132.jpg",
+    "pages/page_133.jpg",
+    "pages/page_134.jpg",
+    "pages/page_135.jpg",
+    "pages/page_136.jpg",
+    "pages/page_137.jpg",
+    "pages/page_138.jpg",
+    "pages/page_139.jpg",
+    "pages/page_140.jpg",
+    "pages/page_141.jpg",
+    "pages/page_142.jpg",
+    "pages/page_143.jpg",
+    "pages/page_144.jpg",
+    "pages/page_145.jpg",
+    "pages/page_146.jpg",
+    "pages/page_147.jpg",
+    "pages/page_148.jpg",
+    "pages/page_149.jpg",
+    "pages/page_150.jpg",
+    "pages/page_151.jpg",
+    "pages/page_152.jpg",
+    "pages/page_153.jpg",
+    "pages/page_154.jpg",
+    "pages/page_155.jpg",
+    "pages/page_156.jpg",
+    "pages/page_157.jpg",
+    "pages/page_158.jpg",
+    "pages/page_159.jpg",
+    "pages/page_160.jpg",
+    "pages/page_161.jpg",
+    "pages/page_162.jpg",
+    "pages/page_163.jpg",
+    "pages/page_164.jpg",
+    "pages/page_165.jpg",
+    "pages/page_166.jpg",
+    "pages/page_167.jpg",
+    "pages/page_168.jpg",
+    "pages/page_169.jpg",
+    "pages/page_170.jpg",
+    "pages/page_171.jpg",
+    "pages/page_172.jpg",
+    "pages/page_173.jpg",
+    "pages/page_174.jpg",
+    "pages/page_175.jpg",
+    "pages/page_176.jpg",
+    "pages/page_177.jpg",
+    "pages/page_178.jpg",
+    "pages/page_179.jpg",
+    "pages/page_180.jpg",
+    "pages/page_181.jpg",
+    "pages/page_182.jpg",
+    "pages/page_183.jpg",
+    "pages/page_184.jpg",
+    "pages/page_185.jpg",
+    "pages/page_186.jpg",
+    "pages/page_187.jpg",
+    "pages/page_188.jpg",
+    "pages/page_189.jpg",
+    "pages/page_190.jpg",
+    "pages/page_191.jpg",
+    "pages/page_192.jpg",
+    "pages/page_193.jpg",
+    "pages/page_194.jpg",
+    "pages/page_195.jpg",
+    "pages/page_196.jpg",
+    "pages/page_197.jpg",
+    "pages/page_198.jpg",
+    "pages/page_199.jpg",
+    "pages/page_200.jpg",
+    "pages/page_201.jpg",
+    "pages/page_202.jpg",
+    "pages/page_203.jpg",
+    "pages/page_204.jpg",
+    "pages/page_205.jpg",
+    "pages/page_206.jpg",
+    "pages/page_207.jpg",
+    "pages/page_208.jpg",
+    "pages/page_209.jpg"
+    ];
+
+    var imgCache = {};
+    function getImg(pageNum, callback) {
+        var cached = imgCache[pageNum];
+        if (cached && cached.complete && cached.naturalWidth > 0) {
+            if (typeof cached.decode === 'function') {
+                cached.decode().then(function() {
+                    callback(cached);
+                }).catch(function() {
+                    setTimeout(function() { callback(cached); }, 80);
+                });
+            } else {
+                setTimeout(function() { callback(cached); }, 80);
+            }
+            return;
+        }
+        var img = new Image();
+        img.onload = function() {
+            imgCache[pageNum] = img;
+            if (typeof img.decode === 'function') {
+                img.decode().then(function() {
+                    callback(img);
+                }).catch(function() {
+                    callback(img);
+                });
+            } else {
+                callback(img);
+            }
+        };
+        img.onerror = function() {
+            callback(img);
+        };
+        img.src = PAGE_IMAGES[pageNum - 1];
+    }
+    function showPage(pageNum) {
+        if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
+        currentPage = pageNum;
+        if (loadingEl) { loadingEl.style.display = 'none'; loadingEl = null; }
+        var existingPages = pageView.querySelectorAll('.page');
+        for (var i = 0; i < existingPages.length; i++) {
+            existingPages[i].remove();
+        }
+        var pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        pageDiv.id = 'page-' + pageNum;
+        var img = document.createElement('img');
+        img.src = PAGE_IMAGES[pageNum - 1];
+        img.alt = '第' + pageNum + '页';
+        img.draggable = false;
+        pageDiv.appendChild(img);
+        var flipDiv = pageView.querySelector('.flip-page');
+        if (flipDiv) {
+            pageView.insertBefore(pageDiv, flipDiv);
+        } else {
+            pageView.appendChild(pageDiv);
+        }
+        pageNumSpan.textContent = pageNum + ' / ' + TOTAL_PAGES;
+        preloadNearby(pageNum);
+    }
+    function preloadNearby(p) {
+        for (var d = 1; d <= 10; d++) {
+            var targets = [p+d, p-d];
+            for (var t = 0; t < targets.length; t++) {
+                var pg = targets[t];
+                if (pg >= 1 && pg <= TOTAL_PAGES && !imgCache[pg]) {
+                    var pi = new Image();
+                    pi.src = PAGE_IMAGES[pg - 1];
+                    imgCache[pg] = pi;
+                }
+            }
+        }
+    }
+    function flipToPage(targetPage) {
+        if (isAnimating) return;
+        if (targetPage < 1 || targetPage > TOTAL_PAGES) return;
+        if (targetPage === currentPage) return;
+        isAnimating = true;
+        var oldPage = currentPage;
+        var distance = Math.abs(targetPage - oldPage);
+
+        getImg(targetPage, function(loadedImg) {
+            if (distance <= 3) {
+                doFlip(oldPage, targetPage, loadedImg);
+            } else {
+                doCrossFade(oldPage, targetPage, loadedImg);
+            }
+        });
+    }
+    function doFlip(oldPage, targetPage, loadedImg) {
+        showPage(targetPage);
+        var flipDiv = document.createElement('div');
+        flipDiv.className = 'flip-page';
+        var flipImg = document.createElement('img');
+        flipImg.src = PAGE_IMAGES[oldPage - 1];
+        flipImg.alt = 'Page ' + oldPage;
+        flipDiv.appendChild(flipImg);
+        pageView.appendChild(flipDiv);
+        var dir = targetPage > oldPage ? 'forward' : 'backward';
+        flipDiv.classList.add(dir === 'forward' ? 'flip-forward' : 'flip-backward');
+        flipDiv.addEventListener('animationend', function() { flipDiv.remove(); isAnimating = false; });
+        setTimeout(function() { if (flipDiv.parentNode) flipDiv.remove(); isAnimating = false; }, 700);
+    }
+    function doCrossFade(oldPage, targetPage, loadedImg) {
+        var oldPageDiv = pageView.querySelector('.page');
+        var newPageDiv = document.createElement('div');
+        newPageDiv.className = 'page';
+        newPageDiv.style.opacity = '0';
+        newPageDiv.style.transition = 'opacity 0.2s ease-out';
+        var newImg = document.createElement('img');
+        newImg.src = PAGE_IMAGES[targetPage - 1];
+        newImg.alt = '第' + targetPage + '页';
+        newImg.draggable = false;
+        newPageDiv.appendChild(newImg);
+        pageView.appendChild(newPageDiv);
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                newPageDiv.style.opacity = '1';
+                if (oldPageDiv) {
+                    oldPageDiv.style.transition = 'opacity 0.15s ease-out';
+                    oldPageDiv.style.opacity = '0';
+                }
+            });
+        });
+        currentPage = targetPage;
+        if (loadingEl) { loadingEl.style.display = 'none'; loadingEl = null; }
+        pageNumSpan.textContent = targetPage + ' / ' + TOTAL_PAGES;
+        preloadNearby(targetPage);
+        setTimeout(function() {
+            if (oldPageDiv && oldPageDiv.parentNode) oldPageDiv.remove();
+            isAnimating = false;
+        }, 300);
+    }
+    function nextPage() { if (currentPage < TOTAL_PAGES) flipToPage(currentPage + 1); }
+    function prevPage() { if (currentPage > 1) flipToPage(currentPage - 1); }
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('toc-overlay').classList.contains('active')) {
+            if (e.key === 'Escape') closeTOC();
+            return;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextPage(); }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevPage(); }
+        else if (e.key === 'Home') { e.preventDefault(); flipToPage(1); }
+        else if (e.key === 'End') { e.preventDefault(); flipToPage(TOTAL_PAGES); }
+    });
+    var touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+    pageView.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+    }, { passive: true });
+    pageView.addEventListener('touchend', function(e) {
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        var dy = e.changedTouches[0].clientY - touchStartY;
+        var dt = Date.now() - touchStartTime;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50 && dt < 500) {
+            if (dx < 0) nextPage();
+            if (dx > 0) prevPage();
+        }
+    }, { passive: true });
+    pageView.addEventListener('click', function(e) {
+        if (isAnimating) return;
+        var rect = pageView.getBoundingClientRect();
+        if (e.clientX - rect.left < rect.width / 2) prevPage();
+        else nextPage();
+    });
+    window.openTOC = function() { document.getElementById('toc-overlay').classList.add('active'); };
+    window.closeTOC = function(e) { if (e && e.target.id !== 'toc-overlay') return; document.getElementById('toc-overlay').classList.remove('active'); };
+    window.flipToPage = function(p) { document.getElementById('toc-overlay').classList.remove('active'); flipToPage(p); };
+    window.nextPage = nextPage;
+    window.prevPage = prevPage;
+    window.showGoto = function() {
+        var overlay = document.getElementById('goto-overlay');
+        var input = document.getElementById('goto-input');
+        input.value = currentPage;
+        input.max = TOTAL_PAGES;
+        overlay.style.display = 'flex';
+        setTimeout(function() { input.focus(); input.select(); }, 100);
+    };
+    window.hideGoto = function() { document.getElementById('goto-overlay').style.display = 'none'; };
+    window.confirmGoto = function() {
+        var val = parseInt(document.getElementById('goto-input').value);
+        if (val >= 1 && val <= TOTAL_PAGES) { hideGoto(); flipToPage(val); }
+    };
+    pageNumSpan.addEventListener('click', function(e) { e.stopPropagation(); showGoto(); });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('goto-overlay').style.display === 'flex') { hideGoto(); }
+    });
+    showPage(1);
+})();
+</script>
+</body>
+</html>
