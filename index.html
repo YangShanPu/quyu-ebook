@@ -646,58 +646,47 @@ body {
         isAnimating = true;
         var oldPage = currentPage;
         var distance = Math.abs(targetPage - oldPage);
-
-        getImg(targetPage, function(loadedImg) {
-            if (distance <= 3) {
-                doFlip(oldPage, targetPage, loadedImg);
-            } else {
-                doCrossFade(oldPage, targetPage, loadedImg);
-            }
-        });
-    }
-    function doFlip(oldPage, targetPage, loadedImg) {
         showPage(targetPage);
+        if (distance <= 3) {
+            doFlipSimple(oldPage);
+        } else {
+            doQuickFade(oldPage);
+        }
+    }
+    function doFlipSimple(oldPage) {
         var flipDiv = document.createElement('div');
         flipDiv.className = 'flip-page';
         var flipImg = document.createElement('img');
         flipImg.src = PAGE_IMAGES[oldPage - 1];
         flipImg.alt = 'Page ' + oldPage;
+        flipImg.draggable = false;
         flipDiv.appendChild(flipImg);
         pageView.appendChild(flipDiv);
-        var dir = targetPage > oldPage ? 'forward' : 'backward';
+        var dir = currentPage > oldPage ? 'forward' : 'backward';
         flipDiv.classList.add(dir === 'forward' ? 'flip-forward' : 'flip-backward');
         flipDiv.addEventListener('animationend', function() { flipDiv.remove(); isAnimating = false; });
         setTimeout(function() { if (flipDiv.parentNode) flipDiv.remove(); isAnimating = false; }, 700);
     }
-    function doCrossFade(oldPage, targetPage, loadedImg) {
-        var oldPageDiv = pageView.querySelector('.page');
-        var newPageDiv = document.createElement('div');
-        newPageDiv.className = 'page';
-        newPageDiv.style.opacity = '0';
-        newPageDiv.style.transition = 'opacity 0.2s ease-out';
-        var newImg = document.createElement('img');
-        newImg.src = PAGE_IMAGES[targetPage - 1];
-        newImg.alt = '第' + targetPage + '页';
-        newImg.draggable = false;
-        newPageDiv.appendChild(newImg);
-        pageView.appendChild(newPageDiv);
+    function doQuickFade(oldPage) {
+        var oldDiv = pageView.querySelector('.page[id]');
+        var fadeDiv = document.createElement('div');
+        fadeDiv.className = 'flip-page';
+        fadeDiv.style.zIndex = '15';
+        fadeDiv.style.opacity = '1';
+        fadeDiv.style.transition = 'opacity 0.3s ease-out';
+        var fImg = document.createElement('img');
+        fImg.src = PAGE_IMAGES[oldPage - 1];
+        fImg.alt = 'Page ' + oldPage;
+        fImg.draggable = false;
+        fadeDiv.appendChild(fImg);
+        pageView.appendChild(fadeDiv);
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-                newPageDiv.style.opacity = '1';
-                if (oldPageDiv) {
-                    oldPageDiv.style.transition = 'opacity 0.15s ease-out';
-                    oldPageDiv.style.opacity = '0';
-                }
+                fadeDiv.style.opacity = '0';
             });
         });
-        currentPage = targetPage;
-        if (loadingEl) { loadingEl.style.display = 'none'; loadingEl = null; }
-        pageNumSpan.textContent = targetPage + ' / ' + TOTAL_PAGES;
-        preloadNearby(targetPage);
-        setTimeout(function() {
-            if (oldPageDiv && oldPageDiv.parentNode) oldPageDiv.remove();
-            isAnimating = false;
-        }, 300);
+        fadeDiv.addEventListener('transitionend', function() { fadeDiv.remove(); isAnimating = false; });
+        setTimeout(function() { if (fadeDiv.parentNode) fadeDiv.remove(); isAnimating = false; }, 500);
     }
     function nextPage() { if (currentPage < TOTAL_PAGES) flipToPage(currentPage + 1); }
     function prevPage() { if (currentPage > 1) flipToPage(currentPage - 1); }
