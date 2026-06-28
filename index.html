@@ -604,7 +604,7 @@ body {
     function showPage(pageNum) {
         if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
         currentPage = pageNum;
-        if (loadingEl) { loadingEl.style.display = 'none'; loadingEl = null; }
+        if (loadingEl) { loadingEl.style.display = 'none'; }
         var existingPages = pageView.querySelectorAll('.page');
         for (var i = 0; i < existingPages.length; i++) {
             existingPages[i].remove();
@@ -612,8 +612,19 @@ body {
         var pageDiv = document.createElement('div');
         pageDiv.className = 'page';
         pageDiv.id = 'page-' + pageNum;
-        var img = document.createElement('img');
-        img.src = PAGE_IMAGES[pageNum - 1];
+        var cached = imgCache[pageNum];
+        var img;
+        if (cached && cached.complete && cached.naturalWidth > 0) {
+            img = cached.cloneNode(false);
+        } else {
+            img = document.createElement('img');
+            img.src = PAGE_IMAGES[pageNum - 1];
+            if (!cached) {
+                var pi = new Image();
+                pi.src = PAGE_IMAGES[pageNum - 1];
+                imgCache[pageNum] = pi;
+            }
+        }
         img.alt = '第' + pageNum + '页';
         img.draggable = false;
         pageDiv.appendChild(img);
@@ -646,14 +657,24 @@ body {
         isAnimating = true;
         var oldPage = currentPage;
         var distance = Math.abs(targetPage - oldPage);
-        // Snag the already-rendered old image BEFORE showPage removes it
         var oldPageDiv = pageView.querySelector('.page[id]');
         var oldImg = oldPageDiv ? oldPageDiv.querySelector('img') : null;
-        showPage(targetPage);
+        var cached = imgCache[targetPage];
+        if (cached && cached.complete && cached.naturalWidth > 0) {
+            showPage(targetPage);
+            playOverlay(oldImg, oldPage, targetPage, distance);
+        } else {
+            getImg(targetPage, function() {
+                showPage(targetPage);
+                playOverlay(oldImg, oldPage, targetPage, distance);
+            });
+        }
+    }
+    function playOverlay(oldImg, oldPage, targetPage, distance) {
         if (!oldImg) { isAnimating = false; return; }
         var overlay = document.createElement('div');
         overlay.className = 'flip-page';
-        overlay.appendChild(oldImg); // MOVE (not clone) – 0ms, no network
+        overlay.appendChild(oldImg);
         pageView.appendChild(overlay);
         if (distance <= 3) {
             var dir = targetPage > oldPage ? 'forward' : 'backward';
