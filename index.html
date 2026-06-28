@@ -569,44 +569,6 @@ body {
     ];
 
     var imgCache = {};
-    function getImg(pageNum, callback) {
-        var cached = imgCache[pageNum];
-        if (cached && cached.complete && cached.naturalWidth > 0) {
-            callback(cached);
-            return;
-        }
-        // Reuse existing loading image — don't create duplicate!
-        if (cached) {
-            if (cached._callbacks) { cached._callbacks.push(callback); return; }
-            cached._callbacks = [callback];
-            cached.addEventListener('load', function() {
-                var cbs = cached._callbacks;
-                delete cached._callbacks;
-                for (var i = 0; i < cbs.length; i++) cbs[i](cached);
-            }, { once: true });
-            cached.addEventListener('error', function() {
-                var cbs = cached._callbacks;
-                delete cached._callbacks;
-                for (var i = 0; i < cbs.length; i++) cbs[i](cached);
-            }, { once: true });
-            return;
-        }
-        var img = new Image();
-        img._callbacks = [callback];
-        img.addEventListener('load', function() {
-            imgCache[pageNum] = img;
-            var cbs = img._callbacks;
-            delete img._callbacks;
-            for (var i = 0; i < cbs.length; i++) cbs[i](img);
-        }, { once: true });
-        img.addEventListener('error', function() {
-            var cbs = img._callbacks;
-            delete img._callbacks;
-            for (var i = 0; i < cbs.length; i++) cbs[i](img);
-        }, { once: true });
-        img.src = PAGE_IMAGES[pageNum - 1];
-        imgCache[pageNum] = img;
-    }
     function showPage(pageNum) {
         if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
         currentPage = pageNum;
@@ -618,6 +580,7 @@ body {
         var pageDiv = document.createElement('div');
         pageDiv.className = 'page';
         pageDiv.id = 'page-' + pageNum;
+        // Clone cached bitmap if available (instant), otherwise let browser load progressively
         var cached = imgCache[pageNum];
         var img;
         if (cached && cached.complete && cached.naturalWidth > 0) {
@@ -625,11 +588,6 @@ body {
         } else {
             img = document.createElement('img');
             img.src = PAGE_IMAGES[pageNum - 1];
-            if (!cached) {
-                var pi = new Image();
-                pi.src = PAGE_IMAGES[pageNum - 1];
-                imgCache[pageNum] = pi;
-            }
         }
         img.alt = '第' + pageNum + '页';
         img.draggable = false;
@@ -661,23 +619,23 @@ body {
         if (targetPage < 1 || targetPage > TOTAL_PAGES) return;
         if (targetPage === currentPage) return;
         isAnimating = true;
+        // Deadlock safety: force-reset after 3s no matter what
+        var safetyId = setTimeout(function() { isAnimating = false; }, 3000);
         var oldPage = currentPage;
         var distance = Math.abs(targetPage - oldPage);
         var oldPageDiv = pageView.querySelector('.page[id]');
         var oldImg = oldPageDiv ? oldPageDiv.querySelector('img') : null;
-        var cached = imgCache[targetPage];
-        if (cached && cached.complete && cached.naturalWidth > 0) {
-            showPage(targetPage);
+        showPage(targetPage);
+        var wrappedPlay = function() {
+            clearTimeout(safetyId);
             playOverlay(oldImg, oldPage, targetPage, distance);
-            return;
+        };
+        // If old image not ready, wait a tick so the old layer doesn't flash
+        if (!oldImg || !oldImg.complete || oldImg.naturalWidth === 0) {
+            setTimeout(wrappedPlay, 20);
+        } else {
+            wrappedPlay();
         }
-        // Show loading feedback while fetching uncached image
-        if (loadingEl) loadingEl.style.display = 'flex';
-        getImg(targetPage, function() {
-            if (loadingEl) loadingEl.style.display = 'none';
-            showPage(targetPage);
-            playOverlay(oldImg, oldPage, targetPage, distance);
-        });
     }
     function playOverlay(oldImg, oldPage, targetPage, distance) {
         if (!oldImg) { isAnimating = false; return; }
