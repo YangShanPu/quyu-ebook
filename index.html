@@ -572,34 +572,40 @@ body {
     function getImg(pageNum, callback) {
         var cached = imgCache[pageNum];
         if (cached && cached.complete && cached.naturalWidth > 0) {
-            if (typeof cached.decode === 'function') {
-                cached.decode().then(function() {
-                    callback(cached);
-                }).catch(function() {
-                    setTimeout(function() { callback(cached); }, 80);
-                });
-            } else {
-                setTimeout(function() { callback(cached); }, 80);
-            }
+            callback(cached);
+            return;
+        }
+        // Reuse existing loading image — don't create duplicate!
+        if (cached) {
+            if (cached._callbacks) { cached._callbacks.push(callback); return; }
+            cached._callbacks = [callback];
+            cached.addEventListener('load', function() {
+                var cbs = cached._callbacks;
+                delete cached._callbacks;
+                for (var i = 0; i < cbs.length; i++) cbs[i](cached);
+            }, { once: true });
+            cached.addEventListener('error', function() {
+                var cbs = cached._callbacks;
+                delete cached._callbacks;
+                for (var i = 0; i < cbs.length; i++) cbs[i](cached);
+            }, { once: true });
             return;
         }
         var img = new Image();
-        img.onload = function() {
+        img._callbacks = [callback];
+        img.addEventListener('load', function() {
             imgCache[pageNum] = img;
-            if (typeof img.decode === 'function') {
-                img.decode().then(function() {
-                    callback(img);
-                }).catch(function() {
-                    callback(img);
-                });
-            } else {
-                callback(img);
-            }
-        };
-        img.onerror = function() {
-            callback(img);
-        };
+            var cbs = img._callbacks;
+            delete img._callbacks;
+            for (var i = 0; i < cbs.length; i++) cbs[i](img);
+        }, { once: true });
+        img.addEventListener('error', function() {
+            var cbs = img._callbacks;
+            delete img._callbacks;
+            for (var i = 0; i < cbs.length; i++) cbs[i](img);
+        }, { once: true });
         img.src = PAGE_IMAGES[pageNum - 1];
+        imgCache[pageNum] = img;
     }
     function showPage(pageNum) {
         if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
@@ -663,12 +669,15 @@ body {
         if (cached && cached.complete && cached.naturalWidth > 0) {
             showPage(targetPage);
             playOverlay(oldImg, oldPage, targetPage, distance);
-        } else {
-            getImg(targetPage, function() {
-                showPage(targetPage);
-                playOverlay(oldImg, oldPage, targetPage, distance);
-            });
+            return;
         }
+        // Show loading feedback while fetching uncached image
+        if (loadingEl) loadingEl.style.display = 'flex';
+        getImg(targetPage, function() {
+            if (loadingEl) loadingEl.style.display = 'none';
+            showPage(targetPage);
+            playOverlay(oldImg, oldPage, targetPage, distance);
+        });
     }
     function playOverlay(oldImg, oldPage, targetPage, distance) {
         if (!oldImg) { isAnimating = false; return; }
